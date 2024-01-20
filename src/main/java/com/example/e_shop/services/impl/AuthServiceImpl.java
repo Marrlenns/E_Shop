@@ -8,6 +8,7 @@ import com.example.e_shop.entities.Client;
 import com.example.e_shop.entities.User;
 import com.example.e_shop.enums.Role;
 import com.example.e_shop.exceptions.BadCredentialsException;
+import com.example.e_shop.exceptions.BadRequestException;
 import com.example.e_shop.repositories.UserRepository;
 import com.example.e_shop.services.AuthService;
 import lombok.AllArgsConstructor;
@@ -91,14 +92,16 @@ public class AuthServiceImpl implements AuthService {
 
         String[] chunks = token.substring(7).split("\\.");
         Base64.Decoder decoder = Base64.getUrlDecoder();
-
+        if (chunks.length != 3)
+            throw new BadCredentialsException("Wrong token");
         JSONParser jsonParser = new JSONParser();
         JSONObject object = null;
         try {
-            object = (JSONObject) jsonParser.parse(decoder.decode(chunks[1]));
+            byte[] decodedBytes = decoder.decode(chunks[1]);
+            object = (JSONObject) jsonParser.parse(decodedBytes);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            throw new BadCredentialsException("Wrong token");
         }
-        return userRepository.findByNickname(String.valueOf(object.get("sub"))).orElseThrow(() -> new RuntimeException("User can be null"));
+        return   userRepository.findByNickname(String.valueOf(object.get("sub"))).orElseThrow(() -> new BadCredentialsException("User with this token doesn't exist in database"));
     }
 }
