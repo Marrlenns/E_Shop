@@ -27,6 +27,9 @@ public class User implements UserDetails {
     @OneToOne(cascade = CascadeType.ALL)
     private Client client;
 
+//    @OneToOne(cascade = CascadeType.ALL)
+//    private Cart cart;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (role == null)
